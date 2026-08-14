@@ -1,10 +1,24 @@
-import dotenv from "dotenv";
-import app from "./src/app.js";
+import "dotenv/config";
 
-dotenv.config();
+const { default: app } = await import("./src/app.js");
+const { default: connectDatabase } = await import(
+  "./src/config/database.js"
+);
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8081;
 
-app.listen( PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-})
+const startServer = async () => {
+  try {
+    await connectDatabase();
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log(`Allowed frontend: ${process.env.FRONTEND_URI}`);
+    });
+  } catch (error) {
+    console.error("Server startup failed:", error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
