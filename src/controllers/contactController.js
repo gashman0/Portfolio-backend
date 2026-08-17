@@ -1,5 +1,5 @@
 import { success } from "zod";
-import Contact from "../models/contact.js";
+import Contact from "../models/Contact.js";
 import contactSchema from "../validators/contactValidator.js";
 
 const createContact = async (req, res, next) => {
