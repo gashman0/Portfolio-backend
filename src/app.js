@@ -48,8 +48,8 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-app.use("/api/contacts", contactRouter);
-app.use("/api/hire", hireRouter);
+app.use("/contacts", contactRouter);
+app.use("/hire", hireRouter);
 
 app.use((req, res) => {
   return res.status(404).json({
