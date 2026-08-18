@@ -24,13 +24,14 @@ const hireSchema = z.object({
     projectType: z
         .string()
         .trim()
-        .min(10, "Provide atleast 10 characters about your request")
+        .min(3, "Provide atleast 3 characters about your project type request")
+        .max(100, "Your project type shouldn't be more than 100 characters")
         .optional(),
 
     projectDescription: z
         .string()
         .trim()
-        .min(10, "Provide atleast 10 characters about your request")
+        .min(10, "Provide atleast 10 characters about your project in the project description")
         .max(5000, "Description must not exceed 500 characters"),
 
     budget: z 

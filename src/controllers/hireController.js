@@ -18,7 +18,7 @@ const createHire = async (req, res, next) => {
 
         return res.status(201).json({
             success: true,
-            message: "Your hire request has been received",
+            message: "Your hire request has been received, you will be contacted soon!",
             hireId: hire._id,
         })
     } catch (error) {
