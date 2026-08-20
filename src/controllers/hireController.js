@@ -1,7 +1,7 @@
 import { success } from "zod";
 import Hire from "../models/Hire.js";
 import hireSchema from "../validators/hireValidator.js";
-import { sendHireMail } from "../services/mails/hireMail.js";
+import { sendHireMail, sendHireNotification } from "../services/mails/hireMail.js";
 
 const createHire = async (req, res, next) => {
     try {
@@ -25,6 +25,11 @@ const createHire = async (req, res, next) => {
             projectType: result.data.projectType,
             budget: result.data.budget,
             projectDescription: result.data.projectDescription,
+        })
+
+        await sendHireNotification({
+            name: result.data.name,
+            email: result.data.email,
         })
 
         return res.status(201).json({
