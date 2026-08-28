@@ -1,7 +1,7 @@
 // import { success } from "zod";
 import Contact from "../models/Contact.js";
 import contactSchema from "../validators/contactValidator.js";
-import { sendContactEmail, sendContactNotification } from "../services/mails/contactMail.js";
+import { sendContactConfirmation, sendContactNotification } from "../services/mails/contactMail.js";
 
 const createContact = async (req, res, next) => {
     try {
@@ -17,13 +17,13 @@ const createContact = async (req, res, next) => {
 
         const contact = await Contact.create(result.data);
 
-        await sendContactEmail({
+        await sendContactNotification({
             name: result.data.name,
             email: result.data.email,
             subject: result.data.subject,
             message: result.data.message,
         })
-        await sendContactNotification({
+        await sendContactConfirmation({
             name: result.data.name,
             email: result.data.email,
         })
