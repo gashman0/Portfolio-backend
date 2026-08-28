@@ -1,16 +1,9 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 //Email I receive if a customer submits hire request
-const sendHireMail = async ({
+const sendHireNotification = async ({
   name,
   email,
   phone,
@@ -19,9 +12,9 @@ const sendHireMail = async ({
   projectDescription,
   budget,
 }) => {
-  await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: process.env.SMTP_USER,
+  const { data, error } = await resend.emails.send({
+    from: `Gashman <${process.env.MAIL_FROM}>`,
+    to: process.env.MAIL_REPLY_TO,
     replyTo: email,
     subject: `New Portfolio hire request from ${name}`,
     html: `
@@ -37,14 +30,22 @@ const sendHireMail = async ({
             <p>${projectDescription}</p>
         `,
   });
+
+  if (error) {
+    console.error("Hire notification failed:", error);
+    throw new Error(error.message);
+  }
+
+  console.log("Hire notification sent:", data.id);
+  return data;
 };
 
 //Email customer receives if they submit hire request
-const sendHireNotification = async ({ name, email }) => {
-    await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: email,
-    replyTo: process.env.SMTP_USER,
+const sendHireConfirmation = async ({ name, email }) => {
+  const { data, error } = await resend.emails.send({
+    from: `Gashman <${process.env.MAIL_FROM}>`,
+    to: [email],
+    replyTo: process.env.MAIL_REPLY_TO,
     subject: "Thanks for reaching out",
     html: `
         <h2>Hi ${name},</h2>
@@ -66,4 +67,4 @@ const sendHireNotification = async ({ name, email }) => {
   });
 };
 
-export { sendHireMail, sendHireNotification };
+export { sendHireNotification, sendHireConfirmation };

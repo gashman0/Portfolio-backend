@@ -1,40 +1,40 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-//Email I receive if a customer contacts me
-const sendContactEmail = async ({ name, email, subject, message }) => {
-  await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: process.env.SMTP_USER,
+const sendContactNotification = async ({ name, email, subject, message }) => {
+  const { data, error } = await resend.emails.send({
+    from: `Gashman <${process.env.MAIL_FROM}>`,
+    to: process.env.MAIL_REPLY_TO,
     replyTo: email,
-    subject: `New Portfolio contact from ${name}`,
+    subject: `New portfolio contact from ${name}`,
     html: `
-            <h2>New Portfolio Contact</h2>
+        <h2>New Portfolio Contact</h2>
 
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
 
-            <h3>Message</h3>
-            <p>${message}</p>
-        `,
+        <h3>Message</h3>
+        <p>${message}</p>
+    `,
   });
+
+  if (error) {
+    console.error("Contact notification failed:", error);
+    throw new Error(error.message);
+  }
+
+  console.log("Contact notification sent:", data.id);
+
+  return data;
 };
 
-//Enail the customer receives if they contact me
-const sendContactNotification = async ({ name, email }) => {
-  await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: email,
-    replyTo: process.env.SMTP_USER,
+const sendContactConfirmation = async ({ name, email }) => {
+  const { data, error } = await resend.emails.send({
+    from: `Gashman <${process.env.MAIL_FROM}>`,
+    to: [email],
+    replyTo: process.env.MAIL_REPLY_TO,
     subject: "Thanks for reaching out",
     html: `
         <h2>Hi ${name},</h2>
@@ -54,19 +54,13 @@ const sendContactNotification = async ({ name, email }) => {
         </p>
     `,
   });
+
+  if(error){
+    console.error("Contact confirmation failed:", error);
+    throw new Error(error.message);
+  }
+  console.log("Contact confirmation sent:", data.id);
+  return data;
 };
 
-export { sendContactEmail, sendContactNotification };
-
-const testEmail = async () => {
-  const info = await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: process.env.SMTP_USER,
-    subject: "Portfolio Backend Test",
-    text: "If you received this email, Nodemailer and Gmail SMTP are working!",
-  });
-
-  console.log("Email sent:", info.messageId);
-};
-
-export { testEmail };
+export { sendContactConfirmation, sendContactNotification};
